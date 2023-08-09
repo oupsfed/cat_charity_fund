@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +15,7 @@ async def check_name_duplicate(
         project_name, session)
     if project_id is not None:
         raise HTTPException(
-            status_code=400,
+            status_code=HTTPStatus.BAD_REQUEST,
             detail='Проект с таким именем уже существует!',
         )
 
@@ -25,7 +27,7 @@ async def check_charity_project_exists(
     charity_project = await charity_project_crud.get(charity_room_id, session)
     if charity_project is None:
         raise HTTPException(
-            status_code=404,
+            status_code=HTTPStatus.NOT_FOUND,
             detail='Проект не найден!'
         )
     return charity_project
@@ -38,7 +40,7 @@ async def check_charity_project_opened(
     charity_project = await charity_project_crud.get(charity_room_id, session)
     if charity_project.close_date is not None:
         raise HTTPException(
-            status_code=400,
+            status_code=HTTPStatus.BAD_REQUEST,
             detail='Закрытый проект нельзя редактировать!'
         )
 
@@ -50,7 +52,7 @@ async def check_charity_project_invested(
     charity_project = await charity_project_crud.get(charity_room_id, session)
     if charity_project.invested_amount > 0:
         raise HTTPException(
-            status_code=400,
+            status_code=HTTPStatus.BAD_REQUEST,
             detail='В проект были внесены средства, не подлежит удалению!'
         )
 
@@ -59,9 +61,9 @@ async def check_charity_project_new_full_amount(
         project: CharityProject,
         new_full_amount: int,
 ) -> None:
-    if (project.full_amount < new_full_amount
-            or project.invested_amount > new_full_amount):
+    if (project.full_amount < new_full_amount or
+            project.invested_amount > new_full_amount):
         raise HTTPException(
-            status_code=400,
+            status_code=HTTPStatus.BAD_REQUEST,
             detail='Закрытый проект нельзя редактировать!'
         )
